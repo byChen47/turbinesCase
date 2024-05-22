@@ -1,0 +1,201 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  6                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+turbine
+{
+    type            axialFlowTurbineALSource;
+    active          on;
+
+    axialFlowTurbineALSourceCoeffs
+    {
+        fieldNames          (U);
+        selectionMode       cellSet; // cellSet || points || cellZone
+        cellSet             turbine;
+        origin              (-5 0 90);
+        axis                (1 0 0);
+        verticalDirection   (0 0 1);
+        freeStreamVelocity  (11.4 0 0);
+        tipSpeedRatio       7;
+        rotorRadius         63;
+        rhoRef		     1.0;
+        //velocitySampleRadius $chord;
+        //nVelocitySamples    20;
+        
+        /*
+        prescribedMotion
+        {
+            active on;
+            motionType  customMotion;
+            rotationCenter (-0.0098 0.0 -9.6475);
+            initialRotation (0 0 0);
+        }*/
+        // Read harmonic pitching parameters if present        
+        // harmonicPitching
+        // {
+        //     active          false;
+        //     reducedFreq     0;
+        //     amplitude       0;
+        // }
+	
+        //writeForceField     true;
+
+
+        dynamicStall
+        {
+            active          off;
+            dynamicStallModel LeishmanBeddoes; // LeishmanBeddoes|LeishmanBeddoes3G|LeishmanBeddoesSD|LeishmanBeddoesSGC
+        }
+
+        endEffects
+        {
+            active          on;
+            endEffectsModel Glauert; // Glauert || Shen || liftingLine
+            GlauertCoeffs
+            {
+                tipEffects  on;
+                rootEffects on;
+            }
+            ShenCoeffs
+            {
+                c1          0.125;
+                c2          21;
+                tipEffects  on;
+                rootEffects on;
+            }            
+        }
+
+        blades
+        {
+            blade1
+            {
+                writePerf   true;
+                writeElementPerf true;
+                nElements   36;
+                elementProfiles
+                (
+                    
+                    cylinder1   //0
+                    cylinder1   //1
+                    cylinder1   //2
+                    cylinder2   //3
+                    DU40_A17    //4
+                    DU35_A17    //5
+                    DU35_A17    //6
+                    DU30_A17    //7
+                    DU25_A17    //8
+                    DU25_A17    //9
+                    DU21_A17    //10
+                    DU21_A17    //11
+                    NACA64_A17  //12
+                    NACA64_A17  //13
+                    NACA64_A17  //14
+                    NACA64_A17  //15
+                    NACA64_A17  //16
+                    NACA64_A17  //17
+                    NACA64_A17  //18
+                );
+                elementData
+                (
+                    #include "elementData"
+                );
+                collectivePitch 0.0;
+            }
+            blade2
+            {
+                $blade1;
+                writePerf   true;
+                writeElementPerf true;
+                azimuthalOffset 120.0;
+            }
+            blade3
+            {
+                $blade2;
+                azimuthalOffset 240.0;
+            }
+        }
+	/*
+        tower
+        {
+            writePerf   true;
+            writeElementPerf true;
+            includeInTotalDrag  true; // default is false, must be true for use in AL rigid body restraint
+            nElements   20;
+            elementProfiles (cylinder1);
+            elementData
+            ( // axial distance (turbine axis), height, diameter
+                ( 5  0  6.0)
+                ( 5  50 6.0 )
+                ( 5  87.6 3.87)                
+            );
+        }
+         
+	*/
+        // hub
+        // {
+        //     nElements   1;
+        //     elementProfiles (cylinder);
+        //     elementData
+        //     ( // axialdistance, height, diameter
+        //         (-6.912 90 3)
+        //         (-5  90 3)
+        //     );
+        // }
+
+        profileData
+        {
+            cylinder1
+            {
+                data (#include "../../resources/foilData/Cylinder1");
+            }
+            cylinder2
+            {
+                data (#include "../../resources/foilData/Cylinder2");
+            }
+            DU40_A17
+            {
+                data (#include "../../resources/foilData/DU40_A17");
+            }
+            DU35_A17
+            {
+                data (#include "../../resources/foilData/DU35_A17");
+            }
+            DU30_A17
+            {
+                data (#include "../../resources/foilData/DU30_A17");
+            }
+            DU25_A17
+            {
+                data (#include "../../resources/foilData/DU25_A17");
+            }
+            DU21_A17
+            {
+                data (#include "../../resources/foilData/DU21_A17");
+            }
+            NACA64_A17
+            {
+                data (#include "../../resources/foilData/NACA64_A17");
+            }
+
+            // cylinder
+            // {
+            //     data (#include "../../resources/foilData/Cylinder1");
+            // }
+        }
+    }
+}
+
+// ************************************************************************* //
