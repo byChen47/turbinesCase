@@ -1,0 +1,105 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    pcorr
+    {
+        solver          GAMG;
+        tolerance       1e-4;
+        relTol          0;
+        smoother        DICGaussSeidel;
+        cacheAgglomeration no;
+        nCellsInCoarsestLevel 10;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+        maxIter         50;
+    }
+
+    p
+    {
+        $pcorr;
+        tolerance       1e-6;
+        relTol          0.01;
+    }
+
+    pFinal
+    {
+        $p;
+        tolerance       1e-6;
+        relTol          0;
+    }
+
+    "(U|k|omega|nuTilda)"
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-6;
+        relTol          0.1;
+    }
+
+    "(U|k|omega|nuTilda)Final"
+    {
+        $U;
+        relTol          0;
+    }
+}
+
+PIMPLE
+{
+    momentumPredictor yes;
+    correctPhi          no;
+    nOuterCorrectors    3;
+    nCorrectors         3;
+    nNonOrthogonalCorrectors 0;
+    turbOnFinalIterOnly true;
+    pRefCell 1;
+    pRefValue 0;    
+
+    //~ residualControl
+    //~ {
+        //~ U
+        //~ {
+            //~ tolerance 1e-6;
+            //~ relTol 0;
+        //~ }
+        //~ p
+        //~ {
+            //~ tolerance 5e-4;
+            //~ relTol 0;
+        //~ }
+    //~ }
+}
+
+//~ relaxationFactors
+//~ {
+    //~ fields
+    //~ {
+        //~ p   1;
+    //~ }
+    //~ equations
+    //~ {
+        //~ "(U|k|epsilon)"      1;
+        //~ "(U|k|epsilon)Final" 1;
+    //~ }
+//~ }
+
+cache
+{
+    grad(U);
+}
+
+// ************************************************************************* //
